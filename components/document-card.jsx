@@ -66,7 +66,7 @@ export default function DocumentCard({
             variant="outline"
             size="sm"
             onClick={() => onEdit(document)}
-            className="flex-1 gap-1"
+            className="flex-1 gap-1 cursor-pointer"
           >
             <Edit2 size={16} />
             Edit
@@ -75,7 +75,7 @@ export default function DocumentCard({
             variant="destructive"
             size="sm"
             onClick={() => onDelete(document.id)}
-            className="flex-1 gap-1"
+            className="flex-1 gap-1 cursor-pointer"
           >
             <Trash2 size={16} />
             Delete

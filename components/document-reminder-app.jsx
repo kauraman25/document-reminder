@@ -15,9 +15,28 @@ export default function DocumentReminderApp() {
   const [documents, setDocuments] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingDocument, setEditingDocument] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    setDocuments(DUMMY_DOCUMENTS)
+   const fetchDocuments = async () => {
+      try {
+        setIsLoading(true)
+        const res = await fetch('/api/documents')
+        if (!res.ok) {
+          console.error('Failed to fetch documents')
+          return
+        }
+
+        const data = await res.json()
+        setDocuments(data)
+      } catch (err) {
+        console.error('Error fetching documents:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDocuments()
   }, [])
 
   const handleAddDocument = () => {
@@ -30,24 +49,63 @@ export default function DocumentReminderApp() {
     setIsModalOpen(true)
   }
 
-  const handleDeleteDocument = (id) => {
-    setDocuments(documents.filter(doc => doc.id !== id))
+  const handleDeleteDocument = async (id) => {
+    try {
+      const res = await fetch(`/api/documents/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!res.ok) {
+        console.error('Failed to delete document')
+        return
+      }
+
+      setDocuments(prev => prev.filter(doc => doc.id !== id))
+    } catch (err) {
+      console.error('Error deleting document:', err)
+    }
   }
 
-  const handleSaveDocument = (formData) => {
-    if (editingDocument) {
-      setDocuments(documents.map(doc =>
-        doc.id === editingDocument.id ? { ...formData, id: doc.id } : doc
-      ))
-    } else {
-      const newDocument = {
-        ...formData,
-        id: Date.now().toString(),
+  const handleSaveDocument = async (formData) => {
+    try {
+      if (editingDocument) {
+        const res = await fetch(`/api/documents/${editingDocument.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+
+        if (!res.ok) {
+          console.error('Failed to update document')
+          return
+        }
+
+        const updated = await res.json()
+
+        setDocuments(prev =>
+          prev.map(doc => (doc.id === editingDocument.id ? updated : doc))
+        )
+      } else {
+        const res = await fetch('/api/documents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+
+        if (!res.ok) {
+          console.error('Failed to create document')
+          return
+        }
+
+        const created = await res.json()
+        setDocuments(prev => [...prev, created])
       }
-      setDocuments([...documents, newDocument])
+
+      setIsModalOpen(false)
+      setEditingDocument(null)
+    } catch (err) {
+      console.error('Error saving document:', err)
     }
-    setIsModalOpen(false)
-    setEditingDocument(null)
   }
 
   const handleCloseModal = () => {
@@ -70,13 +128,15 @@ export default function DocumentReminderApp() {
           </div>
           <Button
             onClick={handleAddDocument}
-            className="gap-2"
+            className="gap-2 cursor-pointer"
           >
             <Plus size={20} />
             Add Document
           </Button>
         </div>
-
+{isLoading && (
+          <p className="text-muted-foreground mb-4">Loading documents...</p>
+        )}
         <ReminderSummary documents={documents} />
 
         <DocumentList

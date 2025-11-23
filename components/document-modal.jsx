@@ -225,10 +225,10 @@ export default function DocumentModal({
 
           {/* Actions */}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button className="cursor-pointer" type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button className="cursor-pointer" type="submit">
               {editingDocument ? 'Update Document' : 'Add Document'}
             </Button>
           </DialogFooter>

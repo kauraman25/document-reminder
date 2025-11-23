@@ -18,7 +18,7 @@ export default function Header() {
           variant="ghost"
           size="icon"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="rounded-full"
+          className="rounded-full cursor-pointer"
         >
           {theme === 'dark' ? (
             <Sun size={20} />

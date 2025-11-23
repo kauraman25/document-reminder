@@ -1,45 +1,29 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import {
+  calculateDaysUntilExpiry,
+  getExpiryStatus,
+  getExpiryMessage,
+} from '@/lib/reminder-utils'
 
 export default function ExpiryBadge({ expiryDate }) {
-  const today = new Date()
-  const expiry = new Date(expiryDate)
-  const daysLeft = Math.floor((expiry - today) / (1000 * 60 * 60 * 24))
-  const weeksLeft = Math.floor(daysLeft / 7)
-  const monthsLeft = Math.floor(daysLeft / 30)
+  // Same logic as reminder summary
+  const daysLeft = calculateDaysUntilExpiry(expiryDate)
+  const status = getExpiryStatus(daysLeft)
+  const label = getExpiryMessage(daysLeft)
 
-  let status = 'active'
-  let label = ''
-  let variant = 'default'
+  let variant = 'outline'
 
-  if (daysLeft < 0) {
-    status = 'expired'
-    label = 'Expired'
+  if (status === 'expired') {
     variant = 'destructive'
-  } else if (daysLeft === 0) {
-    status = 'expiring-today'
-    label = 'Expiring Today'
+  } else if (status === 'urgent') {
     variant = 'destructive'
-  } else if (daysLeft <= 7) {
-    status = 'critical'
-    label = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`
-    variant = 'destructive'
-  } else if (daysLeft <= 14) {
-    status = 'warning'
-    label = `2 weeks left`
+  } else if (status === 'soon') {
     variant = 'secondary'
-  } else if (daysLeft <= 30) {
-    status = 'warning'
-    label = `${weeksLeft} week${weeksLeft !== 1 ? 's' : ''} left`
-    variant = 'secondary'
-  } else if (monthsLeft <= 4) {
-    status = 'caution'
-    label = `${monthsLeft} month${monthsLeft !== 1 ? 's' : ''} left`
+  } else if (status === 'warning') {
     variant = 'outline'
   } else {
-    status = 'active'
-    label = `${monthsLeft} months left`
     variant = 'outline'
   }
 
