@@ -2,6 +2,20 @@ import { AlertCircle, CheckCircle } from 'lucide-react'
 import { calculateReminderSummary, getExpiryMessage } from '@/lib/reminder-utils'
 
 export default function ReminderSummary({ documents }) {
+ 
+  if (!documents || documents.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-5 mb-6">
+        <div className="text-sm text-gray-700 dark:text-gray-300">
+          <p className="font-medium mb-1">No documents found</p>
+          <p>
+            Add your first document to start tracking expiry reminders here.
+          </p>
+        </div>
+      </div>
+    )
+  }
+ 
   const summary = calculateReminderSummary(documents)
 
   // Counts and prioritization
