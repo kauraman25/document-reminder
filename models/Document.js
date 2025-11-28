@@ -9,6 +9,13 @@ const DocumentSchema = new Schema(
     issueDate: { type: Date, required: true },
     expiryDate: { type: Date, required: true },
     category: { type: String, required: true },  // e.g. "Personal"
+    reminder1Days: { type: Number },
+    reminder1Emails: [{ type: String }],   
+    reminder2Days: { type: Number },
+    reminder2Emails: [{ type: String }],   
+    reminder3Days: { type: Number },
+    reminder3Emails: [{ type: String }],
+
     notes: { type: String },
   },
   { timestamps: true }

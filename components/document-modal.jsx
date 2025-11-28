@@ -31,19 +31,19 @@ const CATEGORIES = [
   'Other',
 ]
 
-const TYPES = [
-  'Passport',
-  'Driver License',
-  'Identity Card',
-  'Visa',
-  'License',
-  'Certification',
-  'Insurance',
-  'Registration',
-  'Contract',
-  'Other',
-]
-
+// const TYPES = [
+//   'Passport',
+//   'Driver License',
+//   'Identity Card',
+//   'Visa',
+//   'License',
+//   'Certification',
+//   'Insurance',
+//   'Registration',
+//   'Contract',
+//   'Other',
+// ]
+import { DEFAULT_TYPES } from '../lib/document-types'
 export default function DocumentModal({
   isOpen,
   onClose,
@@ -59,7 +59,35 @@ export default function DocumentModal({
     category: '',
     notes: '',
   })
+  const [types, setTypes] = useState([])
+   const [loadingTypes, setLoadingTypes] = useState(false)
+  const [newType, setNewType] = useState('')
+  
+   //  fetch types from backend when modal opens
+  useEffect(() => {
+    if (!isOpen) return
 
+    const fetchTypes = async () => {
+      try {
+        setLoadingTypes(true)
+        const res = await fetch('/api/document-types')
+        if (!res.ok) throw new Error('Failed to load types')
+
+        const data = await res.json()
+        const names = Array.isArray(data) ? data.map(t => t.name) : []
+
+        setTypes(names.length ? names : DEFAULT_TYPES)
+      } catch (err) {
+        console.error(err)
+        setTypes(DEFAULT_TYPES) // fallback to defaults on error
+      } finally {
+        setLoadingTypes(false)
+      }
+    }
+
+    fetchTypes()
+  }, [isOpen])
+  
   useEffect(() => {
     if (editingDocument) {
       setFormData(editingDocument)
@@ -105,6 +133,41 @@ export default function DocumentModal({
     }
   }
 
+   //  add new type -> save in DB + set in dropdown
+  const handleAddType = async () => {
+    const value = newType.trim()
+    if (!value) return
+
+    try {
+      const res = await fetch('/api/document-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: value }),
+      })
+
+      if (!res.ok) {
+        console.error('Failed to add type')
+        return
+      }
+
+      const saved = await res.json()
+      const typeName = saved.name || value
+
+      setTypes(prev =>
+        prev.includes(typeName) ? prev : [...prev, typeName]
+      )
+
+      setFormData(prev => ({
+        ...prev,
+        type: typeName,
+      }))
+
+      setNewType('')
+    } catch (err) {
+      console.error('Error adding type:', err)
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -135,18 +198,35 @@ export default function DocumentModal({
               <Select
                 value={formData.type}
                 onValueChange={(value) => handleSelectChange('type', value)}
+                disabled={loadingTypes}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue  placeholder={loadingTypes ? 'Loading...' : 'Select type'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {TYPES.map(type => (
+                  {types.map(type => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+               <div className="flex gap-2 mt-2">
+                <Input
+                  placeholder="Add new type (e.g., PAN Card)"
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="whitespace-nowrap cursor-pointer"
+                  onClick={handleAddType}
+                >
+                  Add
+                </Button>
+              </div>
             </div>
           </div>
 

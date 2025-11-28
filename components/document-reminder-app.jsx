@@ -9,12 +9,14 @@ import ReminderSummary from './reminder-summary'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { DUMMY_DOCUMENTS } from '@/lib/dummy-data'
+import { useRouter } from 'next/navigation'
 
 export default function DocumentReminderApp() {
   const { theme } = useTheme()
+  const router = useRouter()
   const [documents, setDocuments] = useState([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingDocument, setEditingDocument] = useState(null)
+  // const [isModalOpen, setIsModalOpen] = useState(false)
+  // const [editingDocument, setEditingDocument] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -40,13 +42,11 @@ export default function DocumentReminderApp() {
   }, [])
 
   const handleAddDocument = () => {
-    setEditingDocument(null)
-    setIsModalOpen(true)
+    router.push('/documents/new')
   }
 
   const handleEditDocument = (doc) => {
-    setEditingDocument(doc)
-    setIsModalOpen(true)
+    router.push(`/documents/${doc.id}`)
   }
 
   const handleDeleteDocument = async (id) => {
@@ -66,52 +66,52 @@ export default function DocumentReminderApp() {
     }
   }
 
-  const handleSaveDocument = async (formData) => {
-    try {
-      if (editingDocument) {
-        const res = await fetch(`/api/documents/${editingDocument.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        })
+  // const handleSaveDocument = async (formData) => {
+  //   try {
+  //     if (editingDocument) {
+  //       const res = await fetch(`/api/documents/${editingDocument.id}`, {
+  //         method: 'PUT',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify(formData),
+  //       })
 
-        if (!res.ok) {
-          console.error('Failed to update document')
-          return
-        }
+  //       if (!res.ok) {
+  //         console.error('Failed to update document')
+  //         return
+  //       }
 
-        const updated = await res.json()
+  //       const updated = await res.json()
 
-        setDocuments(prev =>
-          prev.map(doc => (doc.id === editingDocument.id ? updated : doc))
-        )
-      } else {
-        const res = await fetch('/api/documents', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        })
+  //       setDocuments(prev =>
+  //         prev.map(doc => (doc.id === editingDocument.id ? updated : doc))
+  //       )
+  //     } else {
+  //       const res = await fetch('/api/documents', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify(formData),
+  //       })
 
-        if (!res.ok) {
-          console.error('Failed to create document')
-          return
-        }
+  //       if (!res.ok) {
+  //         console.error('Failed to create document')
+  //         return
+  //       }
 
-        const created = await res.json()
-        setDocuments(prev => [...prev, created])
-      }
+  //       const created = await res.json()
+  //       setDocuments(prev => [...prev, created])
+  //     }
 
-      setIsModalOpen(false)
-      setEditingDocument(null)
-    } catch (err) {
-      console.error('Error saving document:', err)
-    }
-  }
+  //     setIsModalOpen(false)
+  //     setEditingDocument(null)
+  //   } catch (err) {
+  //     console.error('Error saving document:', err)
+  //   }
+  // }
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setEditingDocument(null)
-  }
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false)
+  //   setEditingDocument(null)
+  // }
 
   return (
     <div className="min-h-screen bg-background">
@@ -146,12 +146,12 @@ export default function DocumentReminderApp() {
         />
       </div>
 
-      <DocumentModal
+      {/* <DocumentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handleSaveDocument}
         editingDocument={editingDocument}
-      />
+      /> */}
     </div>
   )
 }

@@ -5,6 +5,15 @@ import mongoose from 'mongoose'
 
 export const dynamic = 'force-dynamic'
 
+function parseEmails(value) {
+  if (!value) return []
+  if (Array.isArray(value)) return value
+  return String(value)
+    .split(',')
+    .map(e => e.trim())
+    .filter(Boolean)
+}
+
 function toClient(doc) {
   return {
     id: doc._id.toString(),
@@ -15,6 +24,12 @@ function toClient(doc) {
     expiryDate: doc.expiryDate.toISOString().slice(0, 10),
     category: doc.category,
     notes: doc.notes || '',
+     reminder1Days: doc.reminder1Days ?? '',
+    reminder1Emails: doc.reminder1Emails || [],
+    reminder2Days: doc.reminder2Days ?? '',
+    reminder2Emails: doc.reminder2Emails || [],
+    reminder3Days: doc.reminder3Days ?? '',
+    reminder3Emails: doc.reminder3Emails || [],
   }
 }
 
@@ -60,6 +75,12 @@ export async function PUT(req, context) {
         expiryDate: body.expiryDate,
         category: body.category,
         notes: body.notes,
+        reminder1Days: body.reminder1Days || null,
+        reminder1Emails: parseEmails(body.reminder1Emails),
+        reminder2Days: body.reminder2Days || null,
+        reminder2Emails: parseEmails(body.reminder2Emails),
+        reminder3Days: body.reminder3Days || null,
+        reminder3Emails: parseEmails(body.reminder3Emails),
       },
       { new: true, runValidators: true }
     )

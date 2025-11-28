@@ -4,6 +4,15 @@ import Document from '@/models/Document'
 
 export const dynamic = 'force-dynamic'
 
+function parseEmails(value) {
+  if (!value) return []
+  if (Array.isArray(value)) return value
+  return String(value)
+    .split(',')
+    .map(e => e.trim())
+    .filter(Boolean)
+}
+
 export async function GET() {
   try {
     await connectToDatabase()
@@ -18,6 +27,12 @@ export async function GET() {
       expiryDate: doc.expiryDate.toISOString().slice(0, 10), 
       category: doc.category,
       notes: doc.notes || '',
+      reminder1Days: doc.reminder1Days ?? '',
+      reminder1Emails: doc.reminder1Emails || [],
+      reminder2Days: doc.reminder2Days ?? '',
+      reminder2Emails: doc.reminder2Emails || [],
+      reminder3Days: doc.reminder3Days ?? '',
+      reminder3Emails: doc.reminder3Emails || [],
     }))
 
     return NextResponse.json(normalized, { status: 200 })
@@ -30,7 +45,12 @@ export async function GET() {
 export async function POST(req) {
   try {
     const body = await req.json()
-    const { name, type, number, issueDate, expiryDate, category, notes } = body
+    const { name, type, number, issueDate, expiryDate, category, notes,  reminder1Days,
+      reminder1Emails,
+      reminder2Days,
+      reminder2Emails,
+      reminder3Days,
+      reminder3Emails, } = body
 
     if (!name || !type || !number || !issueDate || !expiryDate || !category) {
       return NextResponse.json(
@@ -49,6 +69,12 @@ export async function POST(req) {
       expiryDate,
       category,
       notes,
+       reminder1Days: reminder1Days || null,
+      reminder1Emails: parseEmails(reminder1Emails),
+      reminder2Days: reminder2Days || null,
+      reminder2Emails: parseEmails(reminder2Emails),
+      reminder3Days: reminder3Days || null,
+      reminder3Emails: parseEmails(reminder3Emails),
     })
 
     const normalized = {
@@ -60,6 +86,12 @@ export async function POST(req) {
       expiryDate: created.expiryDate.toISOString().slice(0, 10),
       category: created.category,
       notes: created.notes || '',
+       reminder1Days: created.reminder1Days ?? '',
+      reminder1Emails: created.reminder1Emails || [],
+      reminder2Days: created.reminder2Days ?? '',
+      reminder2Emails: created.reminder2Emails || [],
+      reminder3Days: created.reminder3Days ?? '',
+      reminder3Emails: created.reminder3Emails || [],
     }
 
     return NextResponse.json(normalized, { status: 201 })

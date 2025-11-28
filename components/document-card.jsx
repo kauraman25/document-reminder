@@ -5,7 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import ExpiryBadge from './expiry-badge'
 import { Edit2, Trash2 } from 'lucide-react'
-
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog'
 export default function DocumentCard({
   document,
   onEdit,
@@ -71,15 +81,40 @@ export default function DocumentCard({
             <Edit2 size={16} />
             Edit
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(document.id)}
-            className="flex-1 gap-1 cursor-pointer"
-          >
-            <Trash2 size={16} />
-            Delete
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex-1 gap-1 cursor-pointer"
+              >
+                <Trash2 size={16} />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Delete this document?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  document <span className="font-semibold">{document.name}</span>{' '}
+                  from your records.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(document.id)}
+                >
+                  Yes, delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardContent>
     </Card>

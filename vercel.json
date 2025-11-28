@@ -1,0 +1,8 @@
+{
+  "cron": [
+    {
+      "path": "/api/run-reminders",
+      "schedule": "0 15 * * *"
+    }
+  ]
+}
