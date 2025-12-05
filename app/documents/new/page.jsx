@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import DocumentForm from '@/components/document-form'
-
+import Head from 'next/head'
+import Header from '@/components/header'
 export default function NewDocumentPage() {
   const router = useRouter()
 
@@ -27,11 +28,14 @@ export default function NewDocumentPage() {
   }
 
   return (
+    <>
+    <Header/>
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Add New Document</h1>
+        <h1 className="text-2xl text-center  font-bold mb-8">Add New Document</h1>
         <DocumentForm onSubmit={handleCreate} submitLabel="Add Document" />
       </div>
     </div>
+    </>
   )
 }

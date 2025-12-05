@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import DocumentForm from '@/components/document-form'
-
+import Header from '@/components/header'
 export default function EditDocumentPage() {
   const { id } = useParams()
   const router = useRouter()
@@ -71,6 +71,8 @@ export default function EditDocumentPage() {
   }
 
   return (
+    <>
+    <Header/>
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-4">Edit Document</h1>
@@ -81,5 +83,6 @@ export default function EditDocumentPage() {
         />
       </div>
     </div>
+    </>
   )
 }

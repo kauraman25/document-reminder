@@ -1,23 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ThemeProvider } from 'next-themes'
+// import { useState, useEffect } from 'react'
 import DocumentReminderApp from '@/components/document-reminder-app'
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false)
+  // const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  // useEffect(() => {
+  //   setMounted(true)
+  // }, [])
 
-  if (!mounted) {
-    return null
-  }
+  // if (!mounted) {
+  //   return null
+  // }
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    
       <DocumentReminderApp />
-    </ThemeProvider>
+    
   )
 }
