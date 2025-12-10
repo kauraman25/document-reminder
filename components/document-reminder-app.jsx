@@ -23,7 +23,7 @@ export default function DocumentReminderApp() {
    const fetchDocuments = async () => {
       try {
         setIsLoading(true)
-        const res = await fetch('/api/documents')
+        const res = await fetch('/api/documents', {credentials: 'include'})
         if (!res.ok) {
           console.error('Failed to fetch documents')
           return
@@ -52,7 +52,7 @@ export default function DocumentReminderApp() {
   const handleDeleteDocument = async (id) => {
     try {
       const res = await fetch(`/api/documents/${id}`, {
-        method: 'DELETE',
+        method: 'DELETE', credentials: 'include'
       })
 
       if (!res.ok) {

@@ -1,6 +1,8 @@
+// app/api/documents/route.js
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongodb'
 import Document from '@/models/Document'
+import { getUserFromRequest } from '@/lib/server-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,18 +15,39 @@ function parseEmails(value) {
     .filter(Boolean)
 }
 
-export async function GET() {
+function safeDateString(val) {
+  if (!val) return null
   try {
+    if (val instanceof Date) return val.toISOString().slice(0, 10)
+    const d = new Date(val)
+    if (isNaN(d.getTime())) return null
+    return d.toISOString().slice(0, 10)
+  } catch {
+    return null
+  }
+}
+
+function isValidDateLike(val) {
+  if (!val) return false
+  const d = new Date(val)
+  return !isNaN(d.getTime())
+}
+
+export async function GET(req) {
+  try {
+    const user = await getUserFromRequest(req)
+    if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+
     await connectToDatabase()
-    const docs = await Document.find().sort({ createdAt: -1 })
+    const docs = await Document.find({ owner: user._id }).sort({ createdAt: -1 })
 
     const normalized = docs.map(doc => ({
       id: doc._id.toString(),
       name: doc.name,
       type: doc.type,
       number: doc.number,
-      issueDate: doc.issueDate.toISOString().slice(0, 10),   
-      expiryDate: doc.expiryDate.toISOString().slice(0, 10), 
+      issueDate: safeDateString(doc.issueDate),
+      expiryDate: safeDateString(doc.expiryDate),
       category: doc.category,
       notes: doc.notes || '',
       reminder1Days: doc.reminder1Days ?? '',
@@ -38,19 +61,31 @@ export async function GET() {
     return NextResponse.json(normalized, { status: 200 })
   } catch (error) {
     console.error('Error fetching documents:', error)
-    return NextResponse.json({ message: 'Error fetching documents' }, { status: 500 })
+    return NextResponse.json({ message: 'Error fetching documents', details: String(error.message) }, { status: 500 })
   }
 }
 
 export async function POST(req) {
   try {
+    const user = await getUserFromRequest(req)
+    if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+
     const body = await req.json()
-    const { name, type, number, issueDate, expiryDate, category, notes,  reminder1Days,
+    const {
+      name,
+      type,
+      number,
+      issueDate,
+      expiryDate,
+      category,
+      notes,
+      reminder1Days,
       reminder1Emails,
       reminder2Days,
       reminder2Emails,
       reminder3Days,
-      reminder3Emails, } = body
+      reminder3Emails,
+    } = body
 
     if (!name || !type || !number || !issueDate || !expiryDate || !category) {
       return NextResponse.json(
@@ -59,17 +94,23 @@ export async function POST(req) {
       )
     }
 
+    // validate dates
+    if (!isValidDateLike(issueDate) || !isValidDateLike(expiryDate)) {
+      return NextResponse.json({ message: 'Invalid issueDate or expiryDate' }, { status: 400 })
+    }
+
     await connectToDatabase()
 
     const created = await Document.create({
+      owner: user._id,
       name,
       type,
       number,
-      issueDate,
-      expiryDate,
+      issueDate: new Date(issueDate),
+      expiryDate: new Date(expiryDate),
       category,
       notes,
-       reminder1Days: reminder1Days || null,
+      reminder1Days: reminder1Days || null,
       reminder1Emails: parseEmails(reminder1Emails),
       reminder2Days: reminder2Days || null,
       reminder2Emails: parseEmails(reminder2Emails),
@@ -82,11 +123,11 @@ export async function POST(req) {
       name: created.name,
       type: created.type,
       number: created.number,
-      issueDate: created.issueDate.toISOString().slice(0, 10),
-      expiryDate: created.expiryDate.toISOString().slice(0, 10),
+      issueDate: safeDateString(created.issueDate),
+      expiryDate: safeDateString(created.expiryDate),
       category: created.category,
       notes: created.notes || '',
-       reminder1Days: created.reminder1Days ?? '',
+      reminder1Days: created.reminder1Days ?? '',
       reminder1Emails: created.reminder1Emails || [],
       reminder2Days: created.reminder2Days ?? '',
       reminder2Emails: created.reminder2Emails || [],
@@ -97,6 +138,6 @@ export async function POST(req) {
     return NextResponse.json(normalized, { status: 201 })
   } catch (error) {
     console.error('Error creating document:', error)
-    return NextResponse.json({ message: 'Error creating document' }, { status: 500 })
+    return NextResponse.json({ message: 'Error creating document', details: String(error.message) }, { status: 500 })
   }
 }

@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose'
 
 const DocumentSchema = new Schema(
   {
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },      // e.g. "Passport"
     type: { type: String, required: true },      // e.g. "Identity"
     number: { type: String, required: true },    // e.g. "P123456789"
