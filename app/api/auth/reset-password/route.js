@@ -12,8 +12,10 @@ export async function POST(req) {
     const user = await User.findOne({ 'resetToken.token': token })
     if (!user) return NextResponse.json({ message: 'Invalid or expired token' }, { status: 400 })
 
-    if (user.resetToken.expiresAt < new Date()) return NextResponse.json({ message: 'Token expired' }, { status: 400 })
-
+   const expiresAt = user.resetToken?.expiresAt
+    if (!expiresAt || new Date(expiresAt) < new Date()) {
+      return NextResponse.json({ message: 'Token expired' }, { status: 400 })
+    }
     user.passwordHash = await User.hashPassword(newPassword)
     user.resetToken = undefined
     await user.save()
