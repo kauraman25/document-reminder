@@ -11,14 +11,17 @@ export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() =>{
-    let mounted = true
+     const controller = new AbortController()
+    let redirected = false
     const check = async () => {
       try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' })
-        if (!mounted) return
+        const res = await fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
         if (!res.ok) {
           setIsAuthenticated(false)
-          router.push('/login')
+           if (!redirected) {
+            redirected = true
+            router.replace('/login')
+          }
           return
         } 
         const body = await res.json()
@@ -26,18 +29,28 @@ export default function Home() {
           setIsAuthenticated(true)
         } else {
           setIsAuthenticated(false)
-          router.push('/login')
+           if (!redirected) {
+            redirected = true
+            router.replace('/login')
+          }
         }
       } catch (err) {
+        if (err.name === 'AbortError') {
+          // fetch was aborted on unmount — silently ignore
+          return
+        }
         console.error('Error checking auth status:', err)
         setIsAuthenticated(false)
-        router.push('/login')
+        if (!redirected) {
+          redirected = true
+          router.replace('/login')
+        }
       } finally {
-        if (mounted) setCheckedAuth(true)
+        setCheckedAuth(true)
       }
     }
     check()
-    return () => { mounted = false }
+    return () => {controller.abort() }
   },[router])
 
   if (!checkedAuth) {
@@ -53,7 +66,9 @@ export default function Home() {
   }
   return (
     
-      null
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-muted-foreground">Redirecting to login…</p>
+    </div>
     
   )
 }
