@@ -52,7 +52,7 @@ export async function GET(req, context) {
     const user = await getUserFromRequest(req)
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-    const { id } = context.params
+    const { id } = await context.params
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ message: 'Invalid ID' }, { status: 400 })
     }
@@ -77,7 +77,7 @@ export async function PUT(req, context) {
     const user = await getUserFromRequest(req)
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-    const { id } = context.params
+    const { id } = await context.params
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ message: 'Invalid ID' }, { status: 400 })
     }
@@ -125,7 +125,7 @@ export async function DELETE(req, context) {
     const user = await getUserFromRequest(req)
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-    const { id } = context.params
+    const { id } = await context.params
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ message: 'Invalid ID' }, { status: 400 })
     }
